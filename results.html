@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wine Contest - Rezultaty</title>
+  <style>
+    body, * {
+        font-family: Palatino Linotype
+    }
+
+    #content {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    @media only screen and (max-width: 700px) {
+        .mobile-hide { display: none !important; }
+    }
+    
+    h1, h2, h3 {
+        margin: 0;
+    }
+
+    a.none {
+        text-decoration: none;
+    }
+
+    .spacer {
+        margin-top: 50px;
+    }
+
+    h1.spacer {
+        margin-bottom: -50px;
+    }
+
+    table {
+        width: 100%;
+    }
+
+    .wine {
+        display: inline-flex;
+        gap: 0 10px;
+        align-items: center;
+        padding: 5px 0;
+    }
+
+    .wine .label {
+        display: inline-flex;
+        flex-direction: column;
+    }
+
+    .wine .label .name {
+        font-size: 1.4em;
+        line-height: 0.8;
+        font-weight: bold;
+    }
+
+    .wine .label .winery {
+        line-height: 0.9;
+        margin-bottom: 2px;
+    }
+
+    .winner {
+        color: #006d00;
+        border-image: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(0,109,0,0.5) 50%, rgba(255,255,255,0) 100%);
+        border-width: 1px;
+        border-style: solid;
+        border-image-slice: 1;
+        border-top: none;
+        border-right: none;
+        border-left: none;
+    }
+
+    .loser {
+        color: #9c0000;
+    }
+
+    .notes {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .note {
+        white-space: pre;
+        font-size: 0.8em;
+        line-height: 0.9;
+        text-align: center;
+        font-style: italic;
+        color: #526161;
+        margin-top: -15px;
+    }
+
+    .note.left {
+        align-self: flex-start
+    }
+
+    .note.center {
+        align-self: center
+    }
+
+    .note.right {
+        align-self: flex-end
+    }
+
+    table thead {
+        font-weight: bold;
+    }
+
+    table.votes {
+        border-spacing: 0 20px;
+    }
+
+    table .col-p1 span, table .col-p2 span, table .col-p3 span {
+        display: inline-flex;
+        width: 25px;
+        height: 25px;
+        border-radius: 100%;
+        align-items: center;
+        justify-content: center;
+    }
+
+    table .col-p1 span {
+        background-color: #f3df6b;
+    }
+
+    table .col-p2 span {
+        background-color: #c0c0c0;
+    }
+
+    table .col-p3 span {
+        background-color: #b59151;
+    }
+
+    table .col-num {
+        width: 20px;
+        text-align: center;
+    }
+
+    table.ranking .col-num {
+        font-size: 1.2em;
+    }
+
+    table.winners-losers td {
+        vertical-align: top;
+    }
+
+    table .col-center {
+        text-align: center;
+    }
+
+    table .col-40 {
+        width: 40%;
+    }
+
+    .judge-avatar {
+        display: inline-flex;
+        width: 30px;
+        height: 30px;
+        background-color: #4a4a4a;
+        color: white;
+        border-radius: 100%;
+        font-size: 15px;
+        align-items: center;
+        justify-content: center;
+        font-family: sans-serif;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .wine-list {
+        width: 30%;
+    }
+
+    .wine-list div {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .loser-sep {
+        font-size: 1.5em;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="content"></div>
+  <script src="common.js"></script>
+  <script>
+
+    const page = {
+        content: '',
+        add: function(s) {
+            this.content += s + '\r\n';
+        }
+    }
+
+    function getWine(id) {
+        return Wines.filter(w => w.id == id)[0];
+    }
+
+    function writeWine(wine) {
+        page.add('<span class="wine">');
+        page.add(`<img src="https://flagcdn.com/24x18/${wine.countryCode}.png"/>`);
+        page.add('<span class="label">');
+        page.add(`<span class="winery">${wine.winery}</span>`);
+        page.add(`<span class="name">${wine.name}</span>`);
+        page.add('</span>');
+        page.add('</span>');
+    }
+
+    function writeJudgeAvatar(id) {
+        const judge = Judges[id];
+        page.add(`<span class="judge-avatar" title="${judge.name}">${judge.initials}</span>`);
+
+    }
+
+    function writeRanking() {
+        const VotesByWine = Votes.reduce((group, current) => {
+            if (!(current.winner in group)) {
+                group[current.winner] = []
+            }
+            group[current.winner].push(current);
+            return group;
+        }, {});
+
+        const WinesRanking = Object
+            .keys(VotesByWine)
+            .sort((a, b) => { 
+                const diff = VotesByWine[b].length - VotesByWine[a].length;
+                return diff == 0 ? getWine(a).price - getWine(b).price : diff;
+            });
+
+        page.add('<h1>Ranking</h1>')
+        page.add('<table class="ranking">');
+        page.add('<thead>');
+        page.add('<tr>');
+        page.add('<td>Miejsce</td>');
+        page.add('<td>Wino</td>');
+        page.add('<td>Link</td>');
+        page.add('<td>PLN</td>');
+        page.add('<td>Głosy</td>');
+        page.add('<td class="mobile-hide"></td>');
+        page.add('</tr>');
+        page.add('</thead>');
+
+        let lastVotes = 0;
+        let place = 0;
+        WinesRanking.forEach((id, n) => {
+            const wine = getWine(id);
+            const votes = VotesByWine[id];
+            if (lastVotes != votes.length) {
+                place += 1;
+                lastVotes = votes.length;
+            }
+            page.add('<tr>');
+            page.add(`<td class="col-num col-p${place}"><span>${place}</span></td>`);
+            page.add('<td>');
+            writeWine(wine);
+            page.add('</td>');
+            page.add(`<td><a class="none" href="${wine.link}">🔗</a></td>`);
+            page.add(`<td>${wine.price}</td>`);
+            page.add(`<td>${votes.length}</td>`);
+            page.add('<td class="mobile-hide">');
+            votes.forEach(v => {
+                writeJudgeAvatar(v.judge)
+            })
+            page.add('</td>');
+            page.add('</tr>');
+        });
+        page.add('</table>');
+    }
+
+    function writeNote(note, type) {
+        if (note) {
+            page.add(`<div class="note ${type}">${note}</span>`);
+        }
+    }
+
+    function writeVotes() {
+        page.add('<h1 class="spacer">Sędziowie</h1>')
+        for (var judge = 0; judge < Judges.length; judge++) {
+            const judgeName = Judges[judge].name;
+            page.add('<h2 class="spacer">');
+            writeJudgeAvatar(judge);
+            page.add(judgeName);
+            page.add('</h2>');
+            const votes = Votes.filter(v => v.judge == judge);
+            page.add('<table class="votes">');
+            votes.forEach((vote, round) => {
+                const left = getWine(vote.left);
+                const right = getWine(vote.right);
+                const [leftClass, rightClass] = vote.winner == vote.left ? ['winner', 'loser'] : ['loser', 'winner'];        
+                page.add('<tr>');
+                page.add('<td class="col-num mobile-hide">' + (round + 1) + '</td>');
+                page.add(`<td class="col-40 ${leftClass}">`);
+                writeWine(left);
+                page.add('</td>');
+                page.add('<td class="col-center">vs</td>');
+                page.add(`<td class="col-40 ${rightClass}">`);
+                writeWine(right);
+                page.add('</td>');
+                page.add('</tr>');
+
+                if (vote.leftNote || vote.note || vote.rightNote) {
+                    page.add('<tr>');
+                    page.add('<td class="col-num"></td>');
+                    page.add('<td colspan="100%">');
+                    page.add('<div class="notes">');
+                    writeNote(vote.leftNote, 'left');
+                    writeNote(vote.note, 'center');
+                    writeNote(vote.rightNote, 'right');
+                    page.add('</div>')
+                    page.add('</td>');
+                    page.add('</tr>');
+                }
+            })
+            page.add('</table>');
+        }
+    }
+
+    function writeWines() {
+        page.add('<h1 class="spacer">Wina</h1>');
+        Wines.forEach(wine => {
+            const link = new URL(wine.link);
+            const winnerVotes = Votes.filter(v => v.winner == wine.id);
+            const loserVotes = Votes.filter(v => v.winner != wine.id && (v.left == wine.id || v.right == wine.id));
+            page.add('<h2 class="spacer">');
+            page.add(wine.name);
+            winnerVotes.forEach(vote => {
+                writeJudgeAvatar(vote.judge);
+            })   
+            page.add('</h2>');
+            page.add('<div>');
+            page.add(`<div><strong>Numer:</strong> ${wine.id}</div>`);
+            page.add(`<div><strong>Producent:</strong> ${wine.winery}</div>`);
+            page.add(`<div><strong>Grona:</strong> ${wine.grapes}</div>`);
+            page.add(`<div><strong>Rocznik:</strong> ${wine.year}</div>`);
+            page.add(`<div><strong>Cena:</strong> ${wine.price} PLN</div>`);
+            page.add(`<div><strong>Pochodzenie:</strong> <img src="https://flagcdn.com/16x12/${wine.countryCode}.png"/>${wine.country}</div>`);
+            page.add(`<div><strong>Sklep:</strong> <a href="${wine.link}">${link.host}</a></div>`);
+            page.add('</div>'); 
+
+            page.add('<table class="winners-losers">');
+            page.add('<thead>');
+            page.add('<tr>');
+            page.add('<td>Gorsze:</td>');
+            page.add('<td class="mobile-hide"></td>');
+            page.add('<td class="mobile-hide"></td>');
+            page.add('<td></td>');
+            page.add('<td>Lepsze:</td>');
+            page.add('</td>');
+            page.add('</tr>');
+            page.add('</thead>');
+            page.add('<tr>');
+            page.add('<td class="wine-list">');
+            page.add('<div>');
+            winnerVotes.forEach(vote => {
+                const otherWineId = vote.right == wine.id ? vote.left : vote.right;
+                const otherWine = getWine(otherWineId);
+                writeWine(otherWine);
+            })
+            page.add('</div>');
+            page.add('</td>');
+            page.add('<td class="loser-sep mobile-hide">&lt;</td>');
+            page.add('<td class="wine-list mobile-hide">');
+            page.add('<div>');
+            writeWine(wine);
+            page.add('</div>');
+            page.add('</td>');
+            page.add('<td class="loser-sep">&lt;</td>');
+            page.add('<td class="wine-list">');
+            page.add('<div>');
+            loserVotes.forEach(vote => {
+                const otherWineId = vote.right == wine.id ? vote.left : vote.right;
+                const otherWine = getWine(otherWineId);
+                writeWine(otherWine);
+            })
+            page.add('</div>');
+            page.add('</td>');
+            page.add('</td>');
+            page.add('</tr>');
+            page.add('</table>');
+        });
+    }
+
+    writeRanking();
+    writeVotes();
+    writeWines();
+
+    var content = document.getElementById("content");
+    content.innerHTML = page.content;
+  </script>
+</body>
+
+</html>

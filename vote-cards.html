@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wine Contest - Karty do głosowania</title>
+  <style>
+    body, * {
+        font-family: Palatino Linotype
+    }
+  
+    h1, h2, h3 {
+        margin: 0;
+    }
+    
+    .slip {
+        height: 180px;
+        display: flex;
+        flex-flow: column;
+        justify-content: center;
+        border-bottom: 1px solid lightgray;
+    }
+    
+    .page-br {
+        page-break-before: always;
+        border-top: 1px solid lightgray;
+    }
+    
+    .judge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+    
+    .name-input {
+        border-bottom: 1px solid black;
+        width: 250px;
+        height: 40px;
+    }
+    
+    .vote-input {
+        font-size: 2em;
+        color: lightgray;
+        border: 1px solid black;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .round {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .round-info {
+        text-align: center;
+    }
+    
+    .round-no {
+        font-weight: bold;
+    }
+    
+    .round-code {
+        color: gray;
+    }
+    
+    .wine {
+        width: 35%;
+        background-repeat: no-repeat;
+        background-repeat: no-repeat;
+        background-size: 120px;
+    }
+    
+    .left {
+        text-align: left;
+        background-position: right;
+    }
+    
+    .right {
+        text-align: right;
+        background-position: left;
+    }
+    
+    .country img {
+        vertical-align: middle;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="content"></div>
+  <script src="common.js"></script>
+  <script>
+    const Variant = [
+        "2-1", "3-4", "6-2", "7-5", "5-8", "3-6", "1-5",
+        "3-8", "1-7", "7-8", "8-4", "1-3", "2-7", "6-4",
+        "4-7", "8-6", "4-1", "2-3", "6-7", "4-5", "8-2",
+        "5-6", "2-5", "5-3", "6-1", "4-2", "8-1", "7-3"
+    ]
+    
+    const JudgeCount = 7;
+    var judges = [];
+    
+    for (var i = 0; i < JudgeCount; i++) {
+        judges.push({ no: i, rounds: [] })
+    }
+    
+    for (var i = 0; i < Variant.length; i++) {
+        const judgeNo = i % JudgeCount;
+        const parts = Variant[i].split("-");
+        judges[judgeNo].rounds.push({ left: parts[0], right: parts[1] });
+    }
+
+    const page = {
+        content: '',
+        add: function(s) {
+            this.content += `${s}\r\n`;
+        }
+    }
+    
+    function writeRoundInfo(judgeNo, roundNo) {
+        page.add('<div class="round-info">');
+        page.add(`<div class="round-no">Runda ${roundNo + 1}/4</div>`);
+        page.add(`<div class="round-code">S${judgeNo + 1}R${roundNo + 1}</div>`);
+        page.add('</div>');
+    }
+    
+    function writeRound(round, judgeNo, roundNo) {
+        page.add('<div class="wine left">');
+        writeWine(round.left);
+        page.add('</div>');
+        page.add(`<div class="vote-input">${round.left}</div>`);
+        
+        writeRoundInfo(judgeNo, roundNo);
+        
+        page.add(`<div class="vote-input">${round.right}</div>`);
+        page.add('<div class="wine right">');
+        writeWine(round.right);
+        page.add('</div>');
+    }
+    
+    function writeCountry(wine) {
+        page.add('<div class="country">')
+        page.add(`<img src="https://flagcdn.com/24x18/${wine.countryCode}.png"/>`);
+        page.add(wine.country);
+        page.add('</div>');
+    }
+    
+    function writeWine(wineNo) {
+        const wine = Wines.find(e => e.id == wineNo);
+        page.add(`<h3>${wine.winery}</h3>`);
+        page.add(`<h2>${wine.name}</h2>`);
+        page.add(`<div>${wine.grapes}</div>`);
+        page.add(`<div>Rok: ${wine.year}</div>`);
+        writeCountry(wine);
+    }
+    
+    for (var i = 0; i < judges.length; i++) {
+        const judge = judges[i];
+        
+        page.add('<div class="slip page-br">')
+        page.add('<div class="judge">')
+        page.add(`<h1> Sędzia #${judge.no + 1}</h1>`);
+        page.add('<div class="name-input"></div>');
+        page.add('</div>')
+        page.add('</div>')
+        
+        for (var j = 0; j < judge.rounds.length; j++) {
+            page.add('<div class="slip">')
+            page.add('<div class="round">');
+            writeRound(judge.rounds[j], judge.no, j);
+            page.add('</div>');
+            page.add('</div>')
+        }
+    }
+
+    var content = document.getElementById("content");
+    content.innerHTML = page.content;
+  </script>
+</body>
+
+</html>
