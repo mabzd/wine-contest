@@ -96,7 +96,7 @@ const Judges = [
     { name: "5", initials: "5" },
     { name: "Pyś", initials: "Pś" },
     { name: "B̴̝́a̸͝ͅr̸̦̈́t̸̯͒o̸͈͝s̶̞͊ẑ̷̠", initials: "B̴̝́" },
-    { name: "MAJKA ♥", initials: "Ma" },
+    { name: "Majka ♥", initials: "Ma" },
 ];
 
 const VotesByJudges = [
