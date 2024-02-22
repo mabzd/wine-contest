@@ -6,18 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Wine Contest - Rezultaty</title>
   <style>
-    @font-face {
-        font-family: "Palatino Linotype W02";
-        src: url("https://db.onlinewebfonts.com/t/6a0482275e06b01d85575eb3b9894566.eot");
-        src: url("https://db.onlinewebfonts.com/t/6a0482275e06b01d85575eb3b9894566.eot?#iefix")format("embedded-opentype"),
-        url("https://db.onlinewebfonts.com/t/6a0482275e06b01d85575eb3b9894566.woff2")format("woff2"),
-        url("https://db.onlinewebfonts.com/t/6a0482275e06b01d85575eb3b9894566.woff")format("woff"),
-        url("https://db.onlinewebfonts.com/t/6a0482275e06b01d85575eb3b9894566.ttf")format("truetype"),
-        url("https://db.onlinewebfonts.com/t/6a0482275e06b01d85575eb3b9894566.svg#Palatino Linotype W02")format("svg");
-    }
-
     body, * {
-        font-family: Palatino Linotype W02
+        font-family: Georgia
     }
 
     #content {
@@ -199,209 +189,225 @@
   <div id="content"></div>
   <script src="common.js"></script>
   <script>
-
-    const page = {
-        content: '',
-        add: function(s) {
-            this.content += s + '\r\n';
-        }
-    }
-
     function getWine(id) {
         return Wines.filter(w => w.id == id)[0];
     }
 
-    function writeWine(wine) {
-        page.add('<span class="wine">');
-        page.add(`<img src="https://flagcdn.com/24x18/${wine.countryCode}.png"/>`);
-        page.add('<span class="label">');
-        page.add(`<span class="winery">${wine.winery}</span>`);
-        page.add(`<span class="name">${wine.name}</span>`);
-        page.add('</span>');
-        page.add('</span>');
-    }
+    function calculateRanking() {
+        const wineIdToVotesMap = Judges
+            .flatMap(j => j.votes.map(v => { return { ...v, judge: j }}))
+            .reduce((map, current) => {
+                if (!(current.winner in map)) {
+                    map[current.winner] = []
+                }
+                map[current.winner].push(current);
+                return map;
+            }, {});
 
-    function writeJudgeAvatar(id) {
-        const judge = Judges[id];
-        page.add(`<span class="judge-avatar" title="${judge.name}">${judge.initials}</span>`);
-
-    }
-
-    function writeRanking() {
-        const VotesByWine = Votes.reduce((group, current) => {
-            if (!(current.winner in group)) {
-                group[current.winner] = []
-            }
-            group[current.winner].push(current);
-            return group;
-        }, {});
-
-        const WinesRanking = Object
-            .keys(VotesByWine)
+        const wineIdsRanking = Object
+            .keys(wineIdToVotesMap)
             .sort((a, b) => { 
-                const diff = VotesByWine[b].length - VotesByWine[a].length;
-                return diff == 0 ? getWine(a).price - getWine(b).price : diff;
+                const votesDiff = wineIdToVotesMap[b].length - wineIdToVotesMap[a].length;
+                return votesDiff == 0 ? getWine(a).price - getWine(b).price : votesDiff;
             });
-
-        page.add('<h1>Ranking</h1>')
-        page.add('<table class="ranking">');
-        page.add('<thead>');
-        page.add('<tr>');
-        page.add('<td>Miejsce</td>');
-        page.add('<td>Wino</td>');
-        page.add('<td>Link</td>');
-        page.add('<td>PLN</td>');
-        page.add('<td>Głosy</td>');
-        page.add('<td class="mobile-hide"></td>');
-        page.add('</tr>');
-        page.add('</thead>');
 
         let lastVotes = 0;
         let place = 0;
-        WinesRanking.forEach((id, n) => {
-            const wine = getWine(id);
-            const votes = VotesByWine[id];
-            if (lastVotes != votes.length) {
-                place += 1;
-                lastVotes = votes.length;
-            }
-            page.add('<tr>');
-            page.add(`<td class="col-num col-p${place}"><span>${place}</span></td>`);
-            page.add('<td>');
-            writeWine(wine);
-            page.add('</td>');
-            page.add(`<td><a class="none" href="${wine.link}">🔗</a></td>`);
-            page.add(`<td>${wine.price}</td>`);
-            page.add(`<td>${votes.length}</td>`);
-            page.add('<td class="mobile-hide">');
-            votes.forEach(v => {
-                writeJudgeAvatar(v.judge)
-            })
-            page.add('</td>');
-            page.add('</tr>');
-        });
-        page.add('</table>');
-    }
-
-    function writeNote(note, type) {
-        if (note) {
-            page.add(`<div class="note ${type}">${note}</span>`);
-        }
-    }
-
-    function writeVotes() {
-        page.add('<h1 class="spacer">Sędziowie</h1>')
-        for (var judge = 0; judge < Judges.length; judge++) {
-            const judgeName = Judges[judge].name;
-            page.add('<h2 class="spacer">');
-            writeJudgeAvatar(judge);
-            page.add(judgeName);
-            page.add('</h2>');
-            const votes = Votes.filter(v => v.judge == judge);
-            page.add('<table class="votes">');
-            votes.forEach((vote, round) => {
-                const left = getWine(vote.left);
-                const right = getWine(vote.right);
-                const [leftClass, rightClass] = vote.winner == vote.left ? ['winner', 'loser'] : ['loser', 'winner'];        
-                page.add('<tr>');
-                page.add('<td class="col-num mobile-hide">' + (round + 1) + '</td>');
-                page.add(`<td class="col-40 ${leftClass}">`);
-                writeWine(left);
-                page.add('</td>');
-                page.add('<td class="col-center">vs</td>');
-                page.add(`<td class="col-40 ${rightClass}">`);
-                writeWine(right);
-                page.add('</td>');
-                page.add('</tr>');
-
-                if (vote.leftNote || vote.note || vote.rightNote) {
-                    page.add('<tr>');
-                    page.add('<td class="col-num mobile-hide"></td>');
-                    page.add('<td colspan="100%">');
-                    page.add('<div class="notes">');
-                    writeNote(vote.leftNote, 'left');
-                    writeNote(vote.note, 'center');
-                    writeNote(vote.rightNote, 'right');
-                    page.add('</div>')
-                    page.add('</td>');
-                    page.add('</tr>');
+        return wineIdsRanking
+            .map(wineId => {
+                const wine = getWine(wineId);
+                const votes  = wineIdToVotesMap[wineId];
+                if (lastVotes != votes.length) {
+                    place += 1;
+                    lastVotes = votes.length;
                 }
+                return { place: place, wine: wine, votes: votes };
             })
-            page.add('</table>');
-        }
     }
 
-    function writeWines() {
-        page.add('<h1 class="spacer">Wina</h1>');
-        Wines.forEach(wine => {
-            const link = new URL(wine.link);
-            const winnerVotes = Votes.filter(v => v.winner == wine.id);
-            const loserVotes = Votes.filter(v => v.winner != wine.id && (v.left == wine.id || v.right == wine.id));
-            page.add('<h2 class="spacer">');
-            page.add(wine.name);
-            winnerVotes.forEach(vote => {
-                writeJudgeAvatar(vote.judge);
-            })   
-            page.add('</h2>');
-            page.add('<div>');
-            page.add(`<div><strong>Numer:</strong> ${wine.id}</div>`);
-            page.add(`<div><strong>Producent:</strong> ${wine.winery}</div>`);
-            page.add(`<div><strong>Grona:</strong> ${wine.grapes}</div>`);
-            page.add(`<div><strong>Rocznik:</strong> ${wine.year}</div>`);
-            page.add(`<div><strong>Cena:</strong> ${wine.price} PLN</div>`);
-            page.add(`<div><strong>Pochodzenie:</strong> <img src="https://flagcdn.com/16x12/${wine.countryCode}.png"/>${wine.country}</div>`);
-            page.add(`<div><strong>Sklep:</strong> <a href="${wine.link}">${link.host}</a></div>`);
-            page.add('</div>'); 
-
-            page.add('<table class="winners-losers">');
-            page.add('<thead>');
-            page.add('<tr>');
-            page.add('<td>Gorsze:</td>');
-            page.add('<td class="mobile-hide"></td>');
-            page.add('<td class="mobile-hide"></td>');
-            page.add('<td></td>');
-            page.add('<td>Lepsze:</td>');
-            page.add('</td>');
-            page.add('</tr>');
-            page.add('</thead>');
-            page.add('<tr>');
-            page.add('<td class="wine-list">');
-            page.add('<div>');
-            winnerVotes.forEach(vote => {
-                const otherWineId = vote.right == wine.id ? vote.left : vote.right;
-                const otherWine = getWine(otherWineId);
-                writeWine(otherWine);
-            })
-            page.add('</div>');
-            page.add('</td>');
-            page.add('<td class="loser-sep mobile-hide">&lt;</td>');
-            page.add('<td class="wine-list mobile-hide">');
-            page.add('<div>');
-            writeWine(wine);
-            page.add('</div>');
-            page.add('</td>');
-            page.add('<td class="loser-sep">&lt;</td>');
-            page.add('<td class="wine-list">');
-            page.add('<div>');
-            loserVotes.forEach(vote => {
-                const otherWineId = vote.right == wine.id ? vote.left : vote.right;
-                const otherWine = getWine(otherWineId);
-                writeWine(otherWine);
-            })
-            page.add('</div>');
-            page.add('</td>');
-            page.add('</td>');
-            page.add('</tr>');
-            page.add('</table>');
-        });
+    function getWineLabelHtml(wine) {
+        return `
+        <span class="wine">
+            <img src="https://flagcdn.com/24x18/${wine.countryCode}.png"/>
+            <span class="label">
+                <span class="winery">${wine.winery}</span>
+                <span class="name">${wine.name}</span>
+            </span>
+        </span>`;
     }
 
-    writeRanking();
-    writeVotes();
-    writeWines();
+    function getJudgeAvatarHtml(judge) {
+        return `<span class="judge-avatar" title="${judge.name}">${judge.initials}</span>`;
+    }
+
+    function getJudgeAvatarsHtml(judges) {
+        return judges.map(j => getJudgeAvatarHtml(j)).join(' ');
+    }
+
+    function getRankingRowHtml(rankingRow) {
+        return `
+        <tr>
+            <td class="col-num col-p${rankingRow.place}"><span>${rankingRow.place}</span></td>
+            <td>${getWineLabelHtml(rankingRow.wine)}</td>
+            <td><a class="none" href="${rankingRow.wine.link}">🔗</a></td>
+            <td>${rankingRow.wine.price}</td>
+            <td>${rankingRow.votes.length}</td>
+            <td class="mobile-hide">${getJudgeAvatarsHtml(rankingRow.votes.map(v => v.judge))}</td>
+        </tr>`;
+    }
+
+    function getRankingRowsHtml(rankingRows) {
+        const ranking = calculateRanking();
+        return ranking.map(row => getRankingRowHtml(row)).join('\n');
+    }
+
+    function getRankingHtml() {
+        return `
+        <table class="ranking">
+            <thead>
+                <tr>
+                    <td>Miejsce</td>
+                    <td>Wino</td>
+                    <td>Link</td>
+                    <td>PLN</td>
+                    <td>Głosy</td>
+                    <td class="mobile-hide"></td>
+                </tr>
+            </thead>
+            <tbody>${getRankingRowsHtml()}</tbody>
+        </table>`;
+    }
+    
+    function getJudgeHtml(judge) {
+        return `
+        <h2 class="spacer">${getJudgeAvatarHtml(judge)} ${judge.name}</h2>
+        ${getJudgeVotesTableHtml(judge.votes)}`;
+    }
+
+    function getJudgesHtml() {
+        return Judges.map(judge => getJudgeHtml(judge)).join('\n');
+    }
+
+    function getJudgeVoteRowHtml(vote, round) {
+        const leftWine = getWine(vote.left);
+        const rightWine = getWine(vote.right);
+        const [leftClass, rightClass] = vote.winner == vote.left ? ['winner', 'loser'] : ['loser', 'winner'];
+        return `
+        <tr>
+            <td class="col-num mobile-hide">${round}</td>
+            <td class="col-40 ${leftClass}">${getWineLabelHtml(leftWine)}</td>
+            <td class="col-center">vs</td>
+            <td class="col-40 ${rightClass}">${getWineLabelHtml(rightWine)}</td>
+        </tr>
+        ${getJudgeVoteNoteRowHtmlIfNeeded(vote)}`;
+    }
+
+    function getJudgeVoteRowsHtml(votes) {
+        return votes.map((vote, round) => getJudgeVoteRowHtml(vote, round + 1)).join('\n');
+    }
+
+    function getJudgeVotesTableHtml(votes) {
+        return `
+        <table class="votes">
+            ${getJudgeVoteRowsHtml(votes)}
+        </table>`;
+    }
+
+    function getJudgeVoteNoteRowHtmlIfNeeded(vote) {
+        return vote.leftNote || vote.note || vote.rightNote
+            ? getJudgeVoteNoteRowHtml(vote)
+            : '';
+    }
+
+    function getVoteHtml(note, type) {
+        return note ? `<div class="note ${type}">${note}</span>` : '';
+    }
+
+    function getJudgeVoteNoteRowHtml(vote) {
+        return `
+        <tr>
+            <td class="col-num mobile-hide"></td>
+            <td colspan="100%">
+                <div class="notes">
+                    ${getVoteHtml(vote.leftNote, 'left')}
+                    ${getVoteHtml(vote.note, 'center')}
+                    ${getVoteHtml(vote.rightNote, 'right')}
+                </div>
+            </td>
+        </tr>`;
+    }
+
+    function getWinesHtml() {
+        return Wines.map(w => getWineHtml(w)).join('\n');
+    }
+
+    function getWineHtml(wine) {
+        const link = new URL(wine.link);
+        const votes = Judges.flatMap(j => j.votes.map(v => { return { ...v, judge: j }}));
+        const winnerVotes = votes.filter(v => v.winner == wine.id);
+        const loserVotes = votes.filter(v => v.winner != wine.id && (v.left == wine.id || v.right == wine.id));
+        return `
+        <h2 class="spacer">${wine.name} ${getJudgeAvatarsHtml(winnerVotes.map(v => v.judge))}</h2>
+        <div>
+            <div><strong>Numer:</strong> ${wine.id}</div>
+            <div><strong>Producent:</strong> ${wine.winery}</div>
+            <div><strong>Grona:</strong> ${wine.grapes}</div>
+            <div><strong>Rocznik:</strong> ${wine.year}</div>
+            <div><strong>Cena:</strong> ${wine.price} PLN</div>
+            <div><strong>Pochodzenie:</strong> <img src="https://flagcdn.com/16x12/${wine.countryCode}.png"/>${wine.country}</div>
+            <div><strong>Sklep:</strong> <a href="${wine.link}">${link.host}</a></div>
+        </div>
+        <table class="winners-losers">
+            <thead>
+                <tr>
+                    <td>Gorsze:</td>
+                    <td class="mobile-hide"></td>
+                    <td class="mobile-hide"></td>
+                    <td></td>
+                    <td>Lepsze:</td>
+                    </td>
+                </tr>
+            </thead>
+            <tr>
+                <td class="wine-list">
+                    <div>
+                        ${winnerVotes.map(vote => {
+                            const otherWineId = vote.right == wine.id ? vote.left : vote.right;
+                            const otherWine = getWine(otherWineId);
+                            return getWineLabelHtml(otherWine);
+                        }).join('\n')}
+                    </div>
+                </td>
+                <td class="loser-sep mobile-hide">&lt;</td>
+                <td class="wine-list mobile-hide">
+                    <div>${getWineLabelHtml(wine)}</div>
+                </td>
+                <td class="loser-sep">&lt;</td>
+                <td class="wine-list">
+                    <div>
+                        ${loserVotes.map(vote => {
+                            const otherWineId = vote.right == wine.id ? vote.left : vote.right;
+                            const otherWine = getWine(otherWineId);
+                            return getWineLabelHtml(otherWine);
+                        }).join('\n')}
+                    </div>
+                </td>
+            </tr>
+        </table>`;
+    }
+
+    function getHtml() {
+        return `
+        <h1>Ranking</h1>
+        ${getRankingHtml()}
+        <h1 class="spacer">Sędziowie</h1>
+        ${getJudgesHtml()}
+        <h1 class="spacer">Wina</h1>
+        ${getWinesHtml()}`;
+    }
 
     var content = document.getElementById("content");
-    content.innerHTML = page.content;
+    content.innerHTML = getHtml();
   </script>
 </body>
 
