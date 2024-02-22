@@ -151,7 +151,7 @@ const Judges = [
         ],
     },
     { 
-        name: "MAJKA ♥",
+        name: "Majka ♥",
         initials: "Ma",
         votes: [
             { left: "1", right: "5", winner: "1" },
