@@ -11,7 +11,7 @@
     }
 
     #content {
-        max-width: 1000px;
+        max-width: 768px;
         margin: 0 auto;
     }
 
@@ -77,20 +77,46 @@
         color: #9c0000;
     }
 
-    .notes {
+    .vote-rounds {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .vote-round {
         display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 20px 0;
+        gap: 20px;
+    }
+
+    .vote {
+        width: 50%;
+    }
+
+    .vote:first-child {
+        text-align: right;
+    }
+
+    .vote:first-child img {
+        order: 1;
+    }
+
+    .notes {
+        display: flex;  
         flex-direction: column;
         width: 100%;
+        margin-top: -19px;
+        background: linear-gradient(179deg, rgb(231 231 231 / 47%) 0%, rgba(255,255,255,0) 100%);
+        padding: 10px;
+        box-shadow: inset #ffffff 0px -10px 10px 10px;
     }
 
     .note {
         white-space: pre;
         font-size: 0.8em;
-        line-height: 0.9;
         text-align: center;
-        font-style: italic;
         color: #526161;
-        margin-top: -15px;
     }
 
     .note.left {
@@ -105,12 +131,13 @@
         align-self: flex-end
     }
 
-    table thead {
-        font-weight: bold;
+    table {
+        width: 700px;
+        margin: 0 auto;
     }
 
-    table.votes {
-        border-spacing: 0 20px;
+    table thead {
+        font-weight: bold;
     }
 
     table .col-p1 span, table .col-p2 span, table .col-p3 span {
@@ -120,6 +147,10 @@
         border-radius: 100%;
         align-items: center;
         justify-content: center;
+    }
+
+    table .col-center {
+        text-align: center;
     }
 
     table .col-p1 span {
@@ -134,25 +165,8 @@
         background-color: #b59151;
     }
 
-    table .col-num {
-        width: 20px;
-        text-align: center;
-    }
-
-    table.ranking .col-num {
-        font-size: 1.2em;
-    }
-
     table.winners-losers td {
         vertical-align: top;
-    }
-
-    table .col-center {
-        text-align: center;
-    }
-
-    table .col-40 {
-        width: 40%;
     }
 
     .judge-avatar {
@@ -247,11 +261,11 @@
     function getRankingRowHtml(rankingRow) {
         return `
         <tr>
-            <td class="col-num col-p${rankingRow.place}"><span>${rankingRow.place}</span></td>
+            <td class="col-center col-p${rankingRow.place}"><span>${rankingRow.place}</span></td>
             <td>${getWineLabelHtml(rankingRow.wine)}</td>
-            <td><a class="none" href="${rankingRow.wine.link}">🔗</a></td>
-            <td>${rankingRow.wine.price}</td>
-            <td>${rankingRow.votes.length}</td>
+            <td class="col-center"><a class="none" href="${rankingRow.wine.link}">🔗</a></td>
+            <td class="col-center">${rankingRow.wine.price}</td>
+            <td class="col-center">${rankingRow.votes.length}</td>
             <td class="mobile-hide">${getJudgeAvatarsHtml(rankingRow.votes.map(v => v.judge))}</td>
         </tr>`;
     }
@@ -293,12 +307,10 @@
         const rightWine = getWine(vote.right);
         const [leftClass, rightClass] = vote.winner == vote.left ? ['winner', 'loser'] : ['loser', 'winner'];
         return `
-        <tr>
-            <td class="col-num mobile-hide">${round}</td>
-            <td class="col-40 ${leftClass}">${getWineLabelHtml(leftWine)}</td>
-            <td class="col-center">vs</td>
-            <td class="col-40 ${rightClass}">${getWineLabelHtml(rightWine)}</td>
-        </tr>
+        <div class="vote-round">
+            <div class="vote ${leftClass}">${getWineLabelHtml(leftWine)}</div>
+            <div class="vote ${rightClass}">${getWineLabelHtml(rightWine)}</div>
+        </div>
         ${getJudgeVoteNoteRowHtmlIfNeeded(vote)}`;
     }
 
@@ -308,9 +320,9 @@
 
     function getJudgeVotesTableHtml(votes) {
         return `
-        <table class="votes">
+        <div class="vote-rounds">
             ${getJudgeVoteRowsHtml(votes)}
-        </table>`;
+        </div>`;
     }
 
     function getJudgeVoteNoteRowHtmlIfNeeded(vote) {
@@ -320,21 +332,16 @@
     }
 
     function getVoteHtml(note, type) {
-        return note ? `<div class="note ${type}">${note}</span>` : '';
+        return note ? `<div class="note ${type}">${note}</div>` : '';
     }
 
     function getJudgeVoteNoteRowHtml(vote) {
         return `
-        <tr>
-            <td class="col-num mobile-hide"></td>
-            <td colspan="100%">
-                <div class="notes">
-                    ${getVoteHtml(vote.leftNote, 'left')}
-                    ${getVoteHtml(vote.note, 'center')}
-                    ${getVoteHtml(vote.rightNote, 'right')}
-                </div>
-            </td>
-        </tr>`;
+        <div class="notes">
+            ${getVoteHtml(vote.leftNote, 'left')}
+            ${getVoteHtml(vote.note, 'center')}
+            ${getVoteHtml(vote.rightNote, 'right')}
+        </div>`;
     }
 
     function getWinesHtml() {
