@@ -419,13 +419,7 @@
         ${getWinesHtml(data)}`;
     }
 
-    window.addEventListener("load", (event) => {
-        const data = getSelectedDataSet();
-        var content = document.getElementById("content");
-        content.innerHTML = data
-            ? getHtml(data)
-            : getDataSetSelectionHtml();
-    });
+    render(data => getHtml(data));
   </script>
 </body>
 

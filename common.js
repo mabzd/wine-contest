@@ -17,3 +17,11 @@ function getDataSetSelectionHtml() {
 function getDataSetHtml(data) {
     return `<li><a href="?dataset=${data.datasetName}">${data.eventName}</a> ${data.eventDate.toISOString().split('T')[0]}</li>`
 }
+
+function render(htmlCallback) {
+    const data = getSelectedDataSet();
+    var content = document.getElementById("content");
+    content.innerHTML = data
+        ? htmlCallback(data)
+        : getDataSetSelectionHtml();
+}
