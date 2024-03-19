@@ -9,22 +9,77 @@
     body, * {
         font-family: Georgia
     }
+
+    h1 { font-size: 1.5em; }
+    h2 { font-size: 1.3em; }
+    h3 { font-size: 1em; }
   
     h1, h2, h3 {
         margin: 0;
     }
+
+    .page {
+        width: 208mm;
+        height: 295mm;
+        padding: 5mm;
+        break-inside: avoid;
+        break-after: always;
+        margin: 0 auto;
+    }
+
+    .page.centered {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .wine-scorecard {
+        margin-top: 10mm;
+    }
+
+    .wine-scorecard .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 5mm;
+    }
+
+    .wine-scorecard .row .key {
+        width: 40%;
+    }
+
+    .label {
+        font-family: sans-serif;
+        position: relative;
+        display: flex;
+        width: 30mm;
+        height: 30mm;
+        align-items: center;
+        justify-content: center;
+        font-size: 18mm;
+        outline: 1px solid rgb(172, 172, 172);
+    }
+
+    .label .label-desc {
+        position: absolute;
+        bottom: 1mm;
+        left: 1mm;
+        font-size: 3mm;
+        display: flex;
+        align-items: center;
+        gap: 1mm;
+        overflow: hidden;
+        right: 1mm;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
     
     .slip {
-        height: 180px;
+        max-height: 50mm;
         display: flex;
         flex-flow: column;
         justify-content: center;
-        border-bottom: 1px solid lightgray;
-    }
-    
-    .page-br {
-        page-break-before: always;
-        border-top: 1px solid lightgray;
+        border-bottom: 1px solid rgb(172, 172, 172);
     }
     
     .judge {
@@ -39,10 +94,15 @@
         width: 250px;
         height: 40px;
     }
+
+    .vote-number {
+        font-size: 2em;
+        color: rgb(172, 172, 172);
+    }
     
     .vote-input {
         font-size: 2em;
-        color: lightgray;
+        color: rgb(172, 172, 172);
         border: 1px solid black;
         width: 40px;
         height: 40px;
@@ -89,6 +149,12 @@
     .country img {
         vertical-align: middle;
     }
+
+    .country-marker {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+    }
   </style>
 </head>
 
@@ -96,72 +162,117 @@
   <div id="content"></div>
   <script src="common.js"></script>
   <script>
-    const JudgeCount = 7;
-    const Variant = [
-        "2-1", "3-4", "6-2", "7-5", "5-8", "3-6", "1-5",
-        "3-8", "1-7", "7-8", "8-4", "1-3", "2-7", "6-4",
-        "4-7", "8-6", "4-1", "2-3", "6-7", "4-5", "8-2",
-        "5-6", "2-5", "5-3", "6-1", "4-2", "8-1", "7-3"
-    ];
-     
-    function getWineHtml(wineNo) {
-        const wine = Wines.find(e => e.id == wineNo);
+    function getCountryMarkerHtml(wine) {
+        return wine.color 
+            ? `<div class="country-marker" style="background-color: ${wine.color}"></div>` 
+            : `<img src="https://flagcdn.com/24x18/${wine.countryCode}.png"/>`;
+    }
+
+    function getWineHtml(data, wineId) {
+        const wine = data.wines.find(e => e.id == wineId); 
         return `
         <h3>${wine.winery}</h3>
         <h2>${wine.name}</h2>
         <div>${wine.grapes}</div>
         <div>Rok: ${wine.year}</div>
         <div class="country">
-            <img src="https://flagcdn.com/24x18/${wine.countryCode}.png"/> ${wine.country}
+            ${getCountryMarkerHtml(wine)} ${wine.country}
         </div>`;
     }
     
-    function getRoundHtml(round, judgeNo, roundNo) {
+    function getRoundHtml(data, round, judgeNo, roundNo, totalRounds) {
+        const perc = Math.floor(100.0 / (totalRounds + 1));
         return `
-        <div class="slip">
+        <div class="slip" style="height: ${perc}%">
             <div class="round">
                 <div class="wine left">
-                    ${getWineHtml(round.left)}
+                    ${getWineHtml(data, round.left)}
                 </div>
                 <div class="vote-input">${round.left}</div>
                 <div class="round-info">
-                    <div class="round-no">Runda ${roundNo + 1}/4</div>
+                    <div class="round-no">Runda ${roundNo + 1}/${totalRounds}</div>
                     <div class="round-code">S${judgeNo + 1}R${roundNo + 1}</div>
                 </div>  
                 <div class="vote-input">${round.right}</div>
                 <div class="wine right">
-                    ${getWineHtml(round.right)}
+                    ${getWineHtml(data, round.right)}
                 </div>
             </div>
         </div>`;
     }
 
-    function getJudgeHtml(judge) {
-        return `
-        <div class="slip page-br">
-            <div class="judge">
-                <h1>Sędzia #${judge.no + 1}</h1>
-                <div class="name-input"></div>
-            </div>
-        </div>
-        ${judge.rounds.map((round, i) => getRoundHtml(round, judge.no, i)).join('\n')}`;
+    function getLabelHtml(wine) {
+        return `<div class="label">${wine.id}<div class="label-desc">${getCountryMarkerHtml(wine)} ${wine.country}</div></div>`
     }
 
-    function getHtml() {
-        var judges = [...Array(JudgeCount)].map((_, i) => { return { no: i, rounds: [] }});
+    function getLabelsPageHtml(data) {
+        return `
+        <div class="page">
+            ${data.wines.map(w => getLabelHtml(w)).join('\n')}
+        </div>`
+    }
+
+    function getScorePageHtml(data) {
+        return `
+        <div class="page centered">
+            <h1>${data.eventName}</h1>
+            <h3>${data.eventDate.toISOString().split('T')[0]}</h3>
+            <div class="wine-scorecard">
+                ${data.wines.map(w => getWineScoreRowHtml(data, w.id)).join('\n')}
+            </div>
+        </div>`
+    }
+
+    function getWineScoreRowHtml(data, wineId) {
+        const maxVotes = data.variant.filter(v => v.split("-").filter(x => x == wineId).length > 0).length;
+        const voteBoxes = [...Array(maxVotes)].map(_ => '<div class="vote-input"></div>').join('\n');
+        return `
+        <div class="row">
+            <div class="key">${getWineHtml(data, wineId)}</div>
+            <div class="vote-number">${wineId}</div>
+            ${voteBoxes}
+        </div>
+        `
+    }
+
+    function getPageHtml(data, judge, totalRounds) {
+        const perc = Math.floor(100.0 / (totalRounds + 1));
+        return `
+        <div class="page">
+            <div class="slip" style="height: ${perc}%">
+                <div class="judge">
+                    <h1>Sędzia #${judge.no + 1}</h1>
+                    <div class="name-input"></div>
+                </div>
+            </div>
+            ${judge.rounds.map((round, i) => getRoundHtml(data, round, judge.no, i, totalRounds)).join('\n')}
+        </div>`;
+    }
+
+    function getHtml(data) {
+        var judges = [...Array(data.judgeCount)].map((_, i) => { return { no: i, rounds: [] }});
+        const totalRounds = data.variant.length / data.judgeCount;
     
-        for (var i = 0; i < Variant.length; i++) {
-            const judgeNo = i % JudgeCount;
-            const parts = Variant[i].split("-");
+        for (var i = 0; i < data.variant.length; i++) {
+            const judgeNo = i % data.judgeCount;
+            const parts = data.variant[i].split("-");
             judges[judgeNo].rounds.push({ left: parts[0], right: parts[1] });
         }
 
-        console.log(judges)
-        return judges.map(j => getJudgeHtml(j)).join('\n');
+        const scorePage = getScorePageHtml(data);
+        const labelsPage = getLabelsPageHtml(data);
+        const judgePages = judges.map(j => getPageHtml(data, j, totalRounds)).join('\n');
+
+        return scorePage + labelsPage + judgePages;
     }
 
-    var content = document.getElementById("content");
-    content.innerHTML = getHtml();
+    window.addEventListener("load", (event) => {
+        const data = getSelectedDataSet();
+        var content = document.getElementById("content");
+        content.innerHTML = data
+            ? getHtml(data)
+            : getDataSetSelectionHtml();
+    });
   </script>
 </body>
 

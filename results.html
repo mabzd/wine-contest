@@ -203,12 +203,12 @@
   <div id="content"></div>
   <script src="common.js"></script>
   <script>
-    function getWine(id) {
-        return Wines.filter(w => w.id == id)[0];
+    function getWine(data, wineId) {
+        return data.wines.filter(w => w.id == wineId)[0];
     }
 
-    function calculateRanking() {
-        const wineIdToVotesMap = Judges
+    function calculateRanking(data) {
+        const wineIdToVotesMap = data.judges
             .flatMap(j => j.votes.map(v => { return { ...v, judge: j }}))
             .reduce((map, current) => {
                 if (!(current.winner in map)) {
@@ -222,14 +222,14 @@
             .keys(wineIdToVotesMap)
             .sort((a, b) => { 
                 const votesDiff = wineIdToVotesMap[b].length - wineIdToVotesMap[a].length;
-                return votesDiff == 0 ? getWine(a).price - getWine(b).price : votesDiff;
+                return votesDiff == 0 ? getWine(data, a).price - getWine(data, b).price : votesDiff;
             });
 
         let lastVotes = 0;
         let place = 0;
         return wineIdsRanking
             .map(wineId => {
-                const wine = getWine(wineId);
+                const wine = getWine(data, wineId);
                 const votes  = wineIdToVotesMap[wineId];
                 if (lastVotes != votes.length) {
                     place += 1;
@@ -270,12 +270,12 @@
         </tr>`;
     }
 
-    function getRankingRowsHtml(rankingRows) {
-        const ranking = calculateRanking();
+    function getRankingRowsHtml(data) {
+        const ranking = calculateRanking(data);
         return ranking.map(row => getRankingRowHtml(row)).join('\n');
     }
 
-    function getRankingHtml() {
+    function getRankingHtml(data) {
         return `
         <table class="ranking">
             <thead>
@@ -288,23 +288,23 @@
                     <td class="mobile-hide"></td>
                 </tr>
             </thead>
-            <tbody>${getRankingRowsHtml()}</tbody>
+            <tbody>${getRankingRowsHtml(data)}</tbody>
         </table>`;
     }
     
-    function getJudgeHtml(judge) {
+    function getJudgeHtml(data, judge) {
         return `
         <h2 class="spacer">${getJudgeAvatarHtml(judge)} ${judge.name}</h2>
-        ${getJudgeVotesTableHtml(judge.votes)}`;
+        ${getJudgeVotesTableHtml(data, judge.votes)}`;
     }
 
-    function getJudgesHtml() {
-        return Judges.map(judge => getJudgeHtml(judge)).join('\n');
+    function getJudgesHtml(data) {
+        return data.judges.map(judge => getJudgeHtml(data, judge)).join('\n');
     }
 
-    function getJudgeVoteRowHtml(vote, round) {
-        const leftWine = getWine(vote.left);
-        const rightWine = getWine(vote.right);
+    function getJudgeVoteRowHtml(data, vote, round) {
+        const leftWine = getWine(data, vote.left);
+        const rightWine = getWine(data, vote.right);
         const [leftClass, rightClass] = vote.winner == vote.left ? ['winner', 'loser'] : ['loser', 'winner'];
         return `
         <div class="vote-round">
@@ -314,14 +314,14 @@
         ${getJudgeVoteNoteRowHtmlIfNeeded(vote)}`;
     }
 
-    function getJudgeVoteRowsHtml(votes) {
-        return votes.map((vote, round) => getJudgeVoteRowHtml(vote, round + 1)).join('\n');
+    function getJudgeVoteRowsHtml(data, votes) {
+        return votes.map((vote, round) => getJudgeVoteRowHtml(data, vote, round + 1)).join('\n');
     }
 
-    function getJudgeVotesTableHtml(votes) {
+    function getJudgeVotesTableHtml(data, votes) {
         return `
         <div class="vote-rounds">
-            ${getJudgeVoteRowsHtml(votes)}
+            ${getJudgeVoteRowsHtml(data, votes)}
         </div>`;
     }
 
@@ -344,13 +344,13 @@
         </div>`;
     }
 
-    function getWinesHtml() {
-        return Wines.map(w => getWineHtml(w)).join('\n');
+    function getWinesHtml(data) {
+        return data.wines.map(w => getWineHtml(data, w)).join('\n');
     }
 
-    function getWineHtml(wine) {
+    function getWineHtml(data, wine) {
         const link = new URL(wine.link);
-        const votes = Judges.flatMap(j => j.votes.map(v => { return { ...v, judge: j }}));
+        const votes = data.judges.flatMap(j => j.votes.map(v => { return { ...v, judge: j }}));
         const winnerVotes = votes.filter(v => v.winner == wine.id);
         const loserVotes = votes.filter(v => v.winner != wine.id && (v.left == wine.id || v.right == wine.id));
         return `
@@ -380,7 +380,7 @@
                     <div>
                         ${winnerVotes.map(vote => {
                             const otherWineId = vote.right == wine.id ? vote.left : vote.right;
-                            const otherWine = getWine(otherWineId);
+                            const otherWine = getWine(data, otherWineId);
                             return getWineLabelHtml(otherWine);
                         }).join('\n')}
                     </div>
@@ -394,7 +394,7 @@
                     <div>
                         ${loserVotes.map(vote => {
                             const otherWineId = vote.right == wine.id ? vote.left : vote.right;
-                            const otherWine = getWine(otherWineId);
+                            const otherWine = getWine(data, otherWineId);
                             return getWineLabelHtml(otherWine);
                         }).join('\n')}
                     </div>
@@ -403,18 +403,27 @@
         </table>`;
     }
 
-    function getHtml() {
+    function getHtml(data) {
+        if (!data.judges) {
+            return "<h1>Brak wyników</h1>";
+        }
+
         return `
         <h1>Ranking</h1>
-        ${getRankingHtml()}
+        ${getRankingHtml(data)}
         <h1 class="spacer">Sędziowie</h1>
-        ${getJudgesHtml()}
+        ${getJudgesHtml(data)}
         <h1 class="spacer">Wina</h1>
-        ${getWinesHtml()}`;
+        ${getWinesHtml(data)}`;
     }
 
-    var content = document.getElementById("content");
-    content.innerHTML = getHtml();
+    window.addEventListener("load", (event) => {
+        const data = getSelectedDataSet();
+        var content = document.getElementById("content");
+        content.innerHTML = data
+            ? getHtml(data)
+            : getDataSetSelectionHtml();
+    });
   </script>
 </body>
 
