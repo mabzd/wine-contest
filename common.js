@@ -15,8 +15,17 @@ function getDataSetSelectionHtml() {
 }
 
 function getDataSetHtml(data) {
-    return `<li><a href="?dataset=${data.datasetName}">${data.eventName}</a> ${data.eventDate.toISOString().split('T')[0]}</li>`
-}
+    // Simple links with href doesn't work on htmlpreview.github.io
+    const q = location.href.indexOf('?') >= 0 ? '&' : '?';
+    return `<li>
+        <a 
+            style="cursor: pointer; color: blue"
+            onclick="location.href = location.href + '${q}dataset=${data.datasetName}'">
+            ${data.eventName}
+        </a> 
+        ${data.eventDate.toISOString().split('T')[0]}
+    </li>`
+};
 
 function render(htmlCallback) {
     const data = getSelectedDataSet();
