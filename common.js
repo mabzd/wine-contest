@@ -1,14 +1,4 @@
-function loadDataScript(url)
-{    
-    var head = document.getElementsByTagName('head')[0];
-    var script = document.createElement('script');
-    script.src = url;
-    head.appendChild(script);
-}
-
 const Data = [];
-loadDataScript('data/001-winawrocka.js');
-loadDataScript('data/002-ger-white.js');
 
 function getSelectedDataSet() {
     const urlParams = new URLSearchParams(window.location.search);
