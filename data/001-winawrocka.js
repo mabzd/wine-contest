@@ -19,6 +19,7 @@ Data.push({
             countryCode: "it",
             year: 2022,
             price: 45,
+            currency: 'PLN',
             link: "https://modernwineclub.pl/produkt/villa-diana-trebbiano-dabruzzo-doc/"
         },
         {
@@ -30,6 +31,7 @@ Data.push({
             countryCode: "es",
             year: 2022,
             price: 48,
+            currency: 'PLN',
             link: "https://modernwineclub.pl/produkt/bodegas-fontana-oveja-blanca-moscatel/"
         },
         {
@@ -41,6 +43,7 @@ Data.push({
             countryCode: "es",
             year: 2022,
             price: 39,
+            currency: 'PLN',
             link: "https://modernwineclub.pl/produkt/blanc-mariner/"
         },
         {
@@ -52,6 +55,7 @@ Data.push({
             countryCode: "au",
             year: 2022,
             price: 40,
+            currency: 'PLN',
             link: "https://modernwineclub.pl/produkt/willowglen-gewurztraminer-riesling/"
         },
         {
@@ -63,6 +67,7 @@ Data.push({
             countryCode: "de",
             year: 2022,
             price: 69,
+            currency: 'PLN',
             link: "https://modernwineclub.pl/produkt/eymann-riesling/"
         },
         {
@@ -74,6 +79,7 @@ Data.push({
             countryCode: "cl",
             year: 2022,
             price: 36,
+            currency: 'PLN',
             link: "https://modernwineclub.pl/produkt/aves-del-sur-chardonnay/"
         },
         {
@@ -85,6 +91,7 @@ Data.push({
             countryCode: "it",
             year: 2022,
             price: 45,
+            currency: 'PLN',
             link: "https://modernwineclub.pl/produkt/fabrizio-vella-bianco-biologico/"
         },
         {
@@ -96,6 +103,7 @@ Data.push({
             countryCode: "it",
             year: 2022,
             price: 40,
+            currency: 'PLN',
             link: "https://modernwineclub.pl/produkt/cantina-colomba-bianca-lumari-lucido-inzolia/"
         },
     ],

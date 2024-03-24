@@ -89,5 +89,73 @@ Data.push({
             currency: 'EUR',
             link: "https://en.weine.de/christmann-riesling-aus-den-lagen-trocken-bio.html"
         }
+    ],
+    judges: [
+        {
+            name: "Gochna", 
+            initials: "G",
+            votes: [
+                { left: "2", right: "4", winner: "4" },
+                { left: "1", right: "5", winner: "5", leftNote: "gorzkość czuję..." },
+                { left: "5", right: "6", winner: "6", leftNote: "bardzo konkurencyjny", rightNote: "przyjemny aromat" },
+                { left: "3", right: "4", winner: "4" },
+                { left: "1", right: "2", winner: "2", leftNote: "po orzeszkach lepsze" },
+            ],
+        },
+        {
+            name: "majajajka ♡", 
+            initials: "M",
+            votes: [
+                { left: "3", right: "5", winner: "3" },
+                { left: "1", right: "6", winner: "1", note: "mocno się waham i trochę obrażam się na organica za gnój" },
+                { left: "2", right: "3", winner: "2", leftNote: "z dwojga złego", note: "oba są FUJ" },
+                { left: "2", right: "6", winner: "2" },
+                { left: "4", right: "5", winner: "4" },
+            ],
+        },
+        {
+            name: "B̴̝́a̸͝ͅr̸̦̈́t̸̯͒o̸͈͝s̶̞͊ẑ̷̠", 
+            initials: "B̴̝́",
+            votes: [
+                { left: "4", right: "6", winner: "4" },
+                { left: "3", right: "6", winner: "3" },
+                { left: "2", right: "5", winner: "5" },
+                { left: "1", right: "4", winner: "4" },
+                { left: "1", right: "3", winner: "3" },
+            ],
+        },
+        {
+            name: "P", 
+            initials: "P",
+            votes: [
+                { left: "2", right: "4", winner: "4" },
+                { left: "1", right: "5", winner: "5", note: "chuj wie\nale faktycznie inne" },
+                { left: "1", right: "2", winner: "2", note: "to jest tak że to po prostu są inne wina.\nto nie jest tak że jedne są lepsze a inne gorsze" },
+                { left: "3", right: "4", winner: "4" },
+                { left: "5", right: "6", winner: "6" },
+            ],
+        },
+        {
+            name: "Pyś", 
+            initials: "Pś",
+            votes: [
+                { left: "4", right: "5", winner: "4", note: "ciężka decyzja" },
+                { left: "1", right: "6", winner: "6" },
+                { left: "2", right: "3", winner: "2" },
+                { left: "2", right: "6", winner: "2" },
+                { left: "3", right: "5", winner: "5" },
+            ],
+        },
+        {
+            name: "Julia", 
+            initials: "J",
+            votes: [
+                { left: "1", right: "3", winner: "3" },
+                { left: "3", right: "6", winner: "6" },
+                { left: "2", right: "5", winner: "2" },
+                { left: "1", right: "4", winner: "4", rightNote: "w pojedynku zdecydowane zwycięstwo!" },
+                { left: "4", right: "6", winner: "4" },
+            ],
+        }
     ]
 });

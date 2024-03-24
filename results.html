@@ -76,8 +76,8 @@
     }
 
     .wine .label .name {
-        font-size: 1.4em;
-        line-height: 0.8;
+        font-size: 1.2em;
+        line-height: 0.9;
         font-weight: bold;
     }
 
@@ -122,7 +122,7 @@
         text-align: right;
     }
 
-    .vote:first-child img {
+    .vote:first-child .country-marker {
         order: 1;
     }
 
@@ -156,7 +156,6 @@
     }
 
     table {
-        width: 700px;
         margin: 0 auto;
     }
 
@@ -206,6 +205,24 @@
         font-family: sans-serif;
         font-weight: bold;
         cursor: pointer;
+        position: relative;
+    }
+
+    .judge-avatar-group {
+        background-color: #7f7f7f;
+        width: 15px;
+        height: 15px;
+        border-radius: 100%;
+        font-family: sans-serif;
+        font-weight: normal;
+        font-size: 11px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: -3px;
+        right: -5px;
     }
 
     .wine-list {
@@ -219,6 +236,17 @@
 
     .loser-sep {
         font-size: 1.5em;
+    }
+
+    div.country-marker {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+    }
+
+    .nowrap {
+        white-space: nowrap;
     }
   </style>
 </head>
@@ -265,10 +293,16 @@
             })
     }
 
+    function getCountryMarkerHtml(wine) {
+        return wine.color 
+            ? `<div class="country-marker" style="background-color: ${wine.color}"></div>` 
+            : `<img class="country-marker" src="https://flagcdn.com/24x18/${wine.countryCode}.png"/>`;
+    }
+
     function getWineLabelHtml(wine) {
         return `
         <span class="wine">
-            <img src="https://flagcdn.com/24x18/${wine.countryCode}.png"/>
+            ${getCountryMarkerHtml(wine)}
             <span class="label">
                 <span class="winery">${wine.winery}</span>
                 <span class="name">${wine.name}</span>
@@ -277,11 +311,19 @@
     }
 
     function getJudgeAvatarHtml(judge) {
-        return `<span class="judge-avatar" title="${judge.name}">${judge.initials}</span>`;
+        const count = judge.count > 1 ? `<span class="judge-avatar-group">${judge.count}</span>` : '';
+        return `<span class="judge-avatar" title="${judge.name}">${judge.initials}${count}</span>`;
     }
 
     function getJudgeAvatarsHtml(judges) {
-        return judges.map(j => getJudgeAvatarHtml(j)).join(' ');
+        const judgesMap = judges.reduce((map, current) => {
+            if (!(current.name in map)) {
+                    map[current.name] = { ...current, count: 0 };
+                }
+                map[current.name].count += 1;
+                return map;
+        }, {});
+        return Object.keys(judgesMap).map(k => getJudgeAvatarHtml(judgesMap[k])).join(' ');
     }
 
     function getRankingRowHtml(rankingRow) {
@@ -290,9 +332,9 @@
             <td class="col-center col-p${rankingRow.place}"><span>${rankingRow.place}</span></td>
             <td>${getWineLabelHtml(rankingRow.wine)}</td>
             <td class="col-center"><a class="none" href="${rankingRow.wine.link}">🔗</a></td>
-            <td class="col-center">${rankingRow.wine.price}</td>
+            <td class="col-center">${rankingRow.wine.price}<br>${rankingRow.wine.currency}</td>
             <td class="col-center">${rankingRow.votes.length}</td>
-            <td class="mobile-hide">${getJudgeAvatarsHtml(rankingRow.votes.map(v => v.judge))}</td>
+            <td class="mobile-hide nowrap">${getJudgeAvatarsHtml(rankingRow.votes.map(v => v.judge))}</td>
         </tr>`;
     }
 
@@ -309,7 +351,7 @@
                     <td>Miejsce</td>
                     <td>Wino</td>
                     <td>Link</td>
-                    <td>PLN</td>
+                    <td>Cena</td>
                     <td>Głosy</td>
                     <td class="mobile-hide"></td>
                 </tr>
@@ -376,18 +418,38 @@
 
     function getWineHtml(data, wine) {
         const link = new URL(wine.link);
-        const votes = data.judges.flatMap(j => j.votes.map(v => { return { ...v, judge: j }}));
-        const winnerVotes = votes.filter(v => v.winner == wine.id);
-        const loserVotes = votes.filter(v => v.winner != wine.id && (v.left == wine.id || v.right == wine.id));
+        const judges = data.judges.filter(j => j.votes.some(v => v.winner == wine.id));
+        const votes = data.judges.flatMap(j => j.votes.filter(v => v.left == wine.id || v.right == wine.id));
+        const betterWineIds = {};
+        const worseWineIds = {};
+
+        for (const vote of votes) {
+            const isWinner = vote.winner == wine.id;
+            const otherWineId = vote.right == wine.id ? vote.left : vote.right;
+            if (isWinner) {
+                if (otherWineId in betterWineIds) {
+                    delete betterWineIds[otherWineId];
+                } else {
+                    worseWineIds[otherWineId] = true;
+                }
+            } else {
+                if (otherWineId in worseWineIds) {
+                    delete worseWineIds[otherWineId];
+                } else {
+                    betterWineIds[otherWineId] = true;
+                }
+            }
+        }
+
         return `
-        <h2 class="spacer">${wine.name} ${getJudgeAvatarsHtml(winnerVotes.map(v => v.judge))}</h2>
+        <h2 class="spacer">${wine.name} ${getJudgeAvatarsHtml(judges)}</h2>
         <div>
             <div><strong>Numer:</strong> ${wine.id}</div>
             <div><strong>Producent:</strong> ${wine.winery}</div>
             <div><strong>Grona:</strong> ${wine.grapes}</div>
             <div><strong>Rocznik:</strong> ${wine.year}</div>
-            <div><strong>Cena:</strong> ${wine.price} PLN</div>
-            <div><strong>Pochodzenie:</strong> <img src="https://flagcdn.com/16x12/${wine.countryCode}.png"/>${wine.country}</div>
+            <div><strong>Cena:</strong> ${wine.price} ${wine.currency}</div>
+            <div><strong>Pochodzenie:</strong> ${getCountryMarkerHtml(wine)} ${wine.country}</div>
             <div><strong>Sklep:</strong> <a href="${wine.link}">${link.host}</a></div>
         </div>
         <table class="winners-losers">
@@ -404,10 +466,9 @@
             <tr>
                 <td class="wine-list">
                     <div>
-                        ${winnerVotes.map(vote => {
-                            const otherWineId = vote.right == wine.id ? vote.left : vote.right;
-                            const otherWine = getWine(data, otherWineId);
-                            return getWineLabelHtml(otherWine);
+                        ${Object.keys(worseWineIds).map(wineId => {
+                            const betterWine = getWine(data, wineId);
+                            return getWineLabelHtml(betterWine);
                         }).join('\n')}
                     </div>
                 </td>
@@ -418,10 +479,9 @@
                 <td class="loser-sep">&lt;</td>
                 <td class="wine-list">
                     <div>
-                        ${loserVotes.map(vote => {
-                            const otherWineId = vote.right == wine.id ? vote.left : vote.right;
-                            const otherWine = getWine(data, otherWineId);
-                            return getWineLabelHtml(otherWine);
+                        ${Object.keys(betterWineIds).map(wineId => {
+                            const worseWine = getWine(data, wineId);
+                            return getWineLabelHtml(worseWine);
                         }).join('\n')}
                     </div>
                 </td>
@@ -435,6 +495,8 @@
         }
 
         return `
+        <h1>${data.eventName}</h1>
+        <hr>
         <h1>Ranking</h1>
         ${getRankingHtml(data)}
         <h1 class="spacer">Sędziowie</h1>
