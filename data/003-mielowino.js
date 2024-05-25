@@ -152,7 +152,7 @@ Data.push({
         },
         {
             name: "Małgorzata Rzanny-Owczarzak", 
-            initials: "Pś",
+            initials: "MR",
             votes: [
                 { left: "7", right: "5", winner: "5", leftNote: "liczyłam na coś więcej..." },
                 { left: "4", right: "7", winner: "4" },
