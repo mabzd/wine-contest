@@ -103,5 +103,97 @@ Data.push({
             currency: 'PLN',
             link: 'https://winesgeorgia.com/domaine/archil-guniava-wine-cellar/'
         },
+    ],
+    judges: [
+        {
+            name: "B̴̝́a̸͝ͅr̸̦̈́t̸̯͒o̸͈͝s̶̞͊ẑ̷̠", 
+            initials: "B̴̝́",
+            votes: [
+                { left: "1", right: "6", winner: "1", rightNote: "wędzonka" },
+                { left: "4", right: "5", winner: "4" },
+                { left: "3", right: "4", winner: "3" },
+                { left: "2", right: "5", winner: "5", noteLeft: ":(" },
+                { left: "6", right: "7", winner: "6", note: "WYLAŁEM BYM OBA." }
+            ],
+        },
+        {
+            name: "Pyś", 
+            initials: "P",
+            votes: [
+                { left: "5", right: "3", winner: "3" },
+                { left: "2", right: "7", winner: "7", leftNote: "mocny aromat kompotu z suszu", rightNote: "zapach+" },
+                { left: "5", right: "1", winner: "1" },
+                { left: "6", right: "7", winner: "6" },
+                { left: "1", right: "6", winner: "1", note: "ciężki wybór\ndwa dobre wytrawne wina" },
+                { left: "4", right: "2", winner: "2", leftNote: "zbyt słodkie jak na mój gust, mało kwasowe" },
+            ],
+        },
+        {
+            name: "5", 
+            initials: "5",
+            votes: [
+                { left: "6", right: "4", winner: "4" },
+                { left: "4", right: "5", winner: "4" },
+                { left: "7", right: "1", winner: "7" },
+                { left: "2", right: "7", winner: "7" },
+                { left: "3", right: "6", winner: "6", note: "podobne do siebie" },
+            ],
+        },
+        {
+            name: "Joanna Sroczyńska-Mieloch", 
+            initials: "J",
+            votes: [
+                { left: "6", right: "2", winner: "2" },
+                { left: "5", right: "6", winner: "6" },
+                { left: "7", right: "1", winner: "7" },
+                { left: "5", right: "3", winner: "5" },
+                { left: "4", right: "2", winner: "2" },
+            ],
+        },
+        {
+            name: "Małgorzata Rzanny-Owczarzak", 
+            initials: "Pś",
+            votes: [
+                { left: "7", right: "5", winner: "5", leftNote: "liczyłam na coś więcej..." },
+                { left: "4", right: "7", winner: "4" },
+                { left: "3", right: "4", winner: "4", leftNote: "wygrywa aromatem", rightNote: "a to smakiem" },
+                { left: "1", right: "2", winner: "1", note: "wybór mega trudny... oba straszne" },
+                { left: "3", right: "1", winner: "3" },
+                { left: "5", right: "6", winner: "5" },
+            ],
+        },
+        {
+            name: "majajajkaB", 
+            initials: "ma",
+            votes: [
+                { left: "1", right: "2", winner: "2" },
+                { left: "7", right: "3", winner: "3" },
+                { left: "2", right: "5", winner: "5" },
+                { left: "3", right: "1", winner: "3" },
+                { left: "6", right: "4", winner: "6" },
+            ],
+        },
+        {
+            name: "MOM͘", 
+            initials: "MO",
+            votes: [
+                { left: "2", right: "3", winner: "3", leftNote: "zaskakująco niefajny zapaszek :(" },
+                { left: "6", right: "2", winner: "6", note: "smutno mi, nie mam tu mocnego faworyta" },
+                { left: "7", right: "3", winner: "3", leftNote: "faktycznie smakuje jak z dołka w ziemi" },
+                { left: "1", right: "4", winner: "4", rightNote: "wspaniałe więcej takich win!" },
+                { left: "7", right: "5", winner: "5", rightNote: "Biore karton na wesele" },
+            ],
+        },
+        {
+            name: "ADAM", 
+            initials: "A",
+            votes: [
+                { left: "3", right: "6", winner: "6" },
+                { left: "4", right: "7", winner: "4" },
+                { left: "1", right: "4", winner: "4" },
+                { left: "5", right: "1", winner: "1" },
+                { left: "2", right: "3", winner: "2" },
+            ],
+        }
     ]
 });
